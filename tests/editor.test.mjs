@@ -16,11 +16,13 @@ test('authorization, persistence, draft isolation, publication, conflicts and me
  assert.equal((await save(editable.data,rev,'draft',{})).status,403);
  assert.equal((await save(editable.data,rev,'draft',{...owner,'oai-authenticated-user-email':'viewer@example.test'})).status,403);
  assert.equal((await save(editable.data,rev,'draft',{...owner,Origin:'https://attacker.test'})).status,403);
- const draft=structuredClone(editable.data);draft.title='编辑器保存验证';draft.titleStyle.align='center';
+ const draft=structuredClone(editable.data);draft.title='编辑器保存验证';draft.titleStyle.align='center';draft.titleStyle.color='#123456';draft.media.push({type:'text',text:'文字模块保存验证',style:{font:'serif',align:'right',weight:400,size:22,color:'#445566'}});
  let r=await save(draft,rev);assert.equal(r.status,200,await r.clone().text());rev=(await r.json()).revision;
  assert.equal((await (await call('/api/projects/jd')).json()).data.title,initial.data.title);
  assert.equal((await (await call('/api/projects/jd?draft=1',{headers:owner})).json()).data.title,draft.title);
+ const savedDraft=(await (await call('/api/projects/jd?draft=1',{headers:owner})).json()).data;assert.equal(savedDraft.media.at(-1).text,'文字模块保存验证');assert.equal(savedDraft.media.at(-1).style.color,'#445566');assert.equal(savedDraft.titleStyle.color,'#123456');
  assert.equal((await save(draft,rev-1)).status,409);
+ const badStyle=structuredClone(draft);badStyle.media.at(-1).style.color='url(javascript:alert(1))';assert.equal((await save(badStyle,rev)).status,400);
  const invalid=structuredClone(draft);invalid.cover={src:'javascript:alert(1)',alt:''};assert.equal((await save(invalid,rev)).status,400);
  r=await save(draft,rev,'publish');assert.equal(r.status,200);rev=(await r.json()).revision;
  assert.equal((await (await call('/api/projects/jd')).json()).data.title,draft.title);
@@ -31,7 +33,7 @@ test('authorization, persistence, draft isolation, publication, conflicts and me
  r=await call(asset.src);assert.equal(r.status,200);assert.equal(r.headers.get('Content-Type'),'image/gif');assert.ok((await r.arrayBuffer()).byteLength>0);
  const pdf=new FormData();pdf.append('file',new Blob(['%PDF-1.7 test'],{type:'application/pdf'}),'test.pdf');assert.equal((await call('/api/media',{method:'POST',headers:owner,body:pdf})).status,400);
  const old=structuredClone(defaults.jd);r=await save(old,rev,'publish');assert.equal(r.status,200);
- assert.equal((await call('/editor.html')).status,200);assert.equal((await call('/projects/jd.html')).status,200);assert.equal((await call('/assets/hero.mp4',{method:'HEAD'})).status,200);
+ assert.equal((await call('/editor.html')).status,200);assert.equal((await call('/projects/jd.html')).status,200);assert.equal((await call('/assets/omega-hd.mp4',{method:'HEAD'})).status,200);
 });
 test('new project stays private as a draft, survives retry, and publishes to its brand',async()=>{
  const payload={brand:'meituan',requestId:crypto.randomUUID()};

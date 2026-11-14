@@ -16,7 +16,8 @@ function validSource(value) {
 function text(value, limit) { if (typeof value !== 'string' || value.length > limit) throw Error('文字长度超出限制'); return value.trim(); }
 function style(value, title = false) {
   if (!value || !fonts.includes(value.font) || !alignments.includes(value.align) || ![400, 500, 600, 700].includes(value.weight) || !Number.isInteger(value.size) || value.size < 12 || value.size > (title ? 72 : 36)) throw Error('文字样式无效');
-  return { font: value.font, align: value.align, weight: value.weight, size: value.size };
+  if (value.color !== undefined && !/^#[0-9a-f]{6}$/i.test(value.color)) throw Error('文字颜色无效');
+  return { font: value.font, align: value.align, weight: value.weight, size: value.size, ...(value.color ? {color:value.color} : {}) };
 }
 export function validate(data) {
   if (!data || !Array.isArray(data.media) || data.media.length > 60) throw Error('最多添加 60 个媒体文件');
@@ -24,6 +25,7 @@ export function validate(data) {
   if (!result.title) throw Error('请填写项目标题');
   if (data.cover) { if (!validSource(data.cover.src) || /\.(mp4|webm)$/.test(data.cover.src)) throw Error('封面必须是图片'); result.cover = { src: data.cover.src, alt: text(data.cover.alt || '', 300) }; }
   for (const item of data.media) {
+    if (item.type === 'text') { result.media.push({type:'text',text:text(item.text,15000),style:style(item.style)}); continue; }
     if (!validSource(item.src) || !['image', 'video'].includes(item.type) || (item.type === 'video') !== /\.(mp4|webm)$/.test(item.src)) throw Error('媒体格式无效');
     result.media.push({ type: item.type, src: item.src, alt: text(item.alt || '', 300), caption: text(item.caption || '', 1000) });
   }
