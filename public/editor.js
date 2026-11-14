@@ -19,7 +19,7 @@ function selectStyle(style,label,title=false){
 }
 function fillStyles(){selectStyle(data.titleStyle,'项目标题',true);$('#title').addEventListener('focus',()=>selectStyle(data.titleStyle,'项目标题',true));$('#description').addEventListener('focus',()=>selectStyle(data.bodyStyle,'项目描述'));applyCanvasStyles();}
 function mediaUI(){
- const cover=$('#cover-preview');cover.replaceChildren();if(data.cover){const img=node('img');img.src=data.cover.src;img.alt='封面预览';cover.append(img);}else{cover.append(node('div','添加一张顶部大图，开启你的项目'));}
+ const empty=!data.cover&&data.media.length===0;$('#empty-canvas').hidden=!empty;document.querySelector('.cover-editor').hidden=!data.cover;document.querySelector('.editor-canvas').classList.toggle('is-empty',empty);const cover=$('#cover-preview');cover.replaceChildren();if(data.cover){const img=node('img');img.src=data.cover.src;img.alt='封面预览';cover.append(img);}else{cover.append(node('div','添加一张顶部大图，开启你的项目'));}
  const list=$('#media-list');list.replaceChildren();$('#module-count').textContent=data.media.length+' / 60 个内容模块';
  data.media.forEach((item,index)=>{
  const card=node('section');card.className='media-card';const bar=node('div');bar.className='block-bar';bar.append(node('span',String(index+1).padStart(2,'0')+' / '+(item.type==='text'?'文字':item.type==='video'?'视频':'图片 / GIF')));card.append(bar);
@@ -36,6 +36,8 @@ function mediaUI(){
 }
 document.querySelectorAll('[data-add-text]').forEach(button=>button.addEventListener('click',()=>{if(data.media.length>=60){status('每个项目最多 60 个内容模块',true);return;}data.media.push({type:'text',text:'',style:defaultStyle()});mediaUI();changed();const input=document.querySelector('[data-text-index="'+(data.media.length-1)+'"]');input.focus();input.scrollIntoView({block:'center',behavior:'smooth'});}));
 document.querySelectorAll('[data-upload]').forEach(button=>button.addEventListener('click',()=>{const input=$('#media-files');input.accept=button.dataset.upload==='video'?'video/mp4,video/webm':button.dataset.upload==='image'?'image/jpeg,image/png,image/webp,image/gif':'image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm';input.click();}));
+document.querySelectorAll('[data-cover]').forEach(button=>button.addEventListener('click',()=>$('#cover-file').click()));
+$('#edit-info').addEventListener('click',()=>{$('#title').scrollIntoView({block:'center',behavior:'smooth'});$('#title').focus({preventScroll:true});});
 $('#select-cover').addEventListener('click',()=>$('#cover-file').click());
 async function upload(files,cover){
  if(!files.length)return;if(!cover&&data.media.length+files.length>60){status('每个项目最多 60 个媒体文件',true);return;}lock(true);let added=0;
