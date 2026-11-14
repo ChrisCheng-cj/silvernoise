@@ -8,7 +8,12 @@ if(lab){
  const thumbs=document.createElement('div');thumbs.className='aigc-thumbs';thumbs.setAttribute('aria-label','选择图片');stage.append(thumbs);
  const cards=[...originals];
  const intro=document.createElement('div');intro.className='aigc-intro';intro.innerHTML='<img src="/assets/aigc/lab-logo.png" alt="AIGC LAB"><p>这里是我的AI实验室<br>这些都是我用AI创建的作品</p>';stage.append(intro);
- const entrance=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){stage.classList.add('aigc-entered');entrance.disconnect();}},{threshold:.45});entrance.observe(stage);
+ const logo= intro.querySelector('img'),copy=intro.querySelector('p');
+ copy.setAttribute('aria-label',copy.textContent);const textChars=[];
+ [...copy.childNodes].forEach(node=>{if(node.nodeType!==3)return;const fragment=document.createDocumentFragment();[...node.textContent].forEach(char=>{const span=document.createElement('span');span.textContent=char;span.setAttribute('aria-hidden','true');span.className='aigc-reveal-char';fragment.append(span);textChars.push(span);});node.replaceWith(fragment);});
+ const clamp=value=>Math.max(0,Math.min(1,value)),ease=value=>{const t=clamp(value);return t*t*(3-2*t);};
+ let imageReveal=0;
+
  stack.setAttribute('aria-label','AIGC图片展示，支持拖动和方向键');
  const states=cards.map(()=>({x:0,y:0,s:.05,ry:0,o:0}));
  for(const name of ['Flat','Tilt','Ring','Gallery']){const button=document.createElement('button');button.type='button';button.textContent=name;button.addEventListener('click',()=>setMode(name));modes.append(button);}
@@ -36,11 +41,20 @@ if(lab){
   intro.style.top=mode==='Gallery'?(galleryCenter-galleryScale*141.4/2-79)+'px':mode==='Tilt'?(stack.offsetTop+h*.08)+'px':'';
   thumbs.style.top=(galleryCenter+galleryScale*141.4/2+24)+'px';thumbs.style.bottom='auto';
   cards.forEach((card,i)=>{const t=target(i,w,h),s=states[i];for(const key of ['x','y','s','ry','o']){const d=t[key]-s[key];s[key]+=reduced.matches?d:d*.16;if(Math.abs(d)>.015)moving=true;}
-   card.style.transform=`translate(-50%,-50%) translate3d(${s.x}px,${s.y}px,0) perspective(900px) rotateY(${s.ry}deg) scale(${s.s})`;card.style.opacity=s.o;card.style.zIndex=String(Math.round(s.s*100));card.style.pointerEvents=t.o>.3?'auto':'none';card.inert=t.o<.3;card.tabIndex=i<originals.length&&t.o>.3?0:-1;
+   card.style.transform=`translate(-50%,-50%) translate3d(${s.x}px,${s.y}px,0) perspective(900px) rotateY(${s.ry}deg) scale(${s.s})`;card.style.opacity=s.o*imageReveal;card.style.zIndex=String(Math.round(s.s*100));card.style.pointerEvents=t.o*imageReveal>.3?'auto':'none';card.inert=t.o*imageReveal<.3;card.tabIndex=i<originals.length&&t.o*imageReveal>.3?0:-1;
   });if(moving)frame=requestAnimationFrame(render);
  }
  function animate(){if(!frame)frame=requestAnimationFrame(render);}
- function scroll(){const top=parseFloat(getComputedStyle(stage).top)||0;const p=Math.max(0,Math.min(1,(top-lab.getBoundingClientRect().top)/Math.max(1,lab.offsetHeight-stage.offsetHeight)));phase=(reduced.matches?0:p*Math.PI*2)+dragPhase;animate();}
+ function scroll(){
+  const top=parseFloat(getComputedStyle(stage).top)||0;
+  const p=clamp((top-lab.getBoundingClientRect().top)/Math.max(1,lab.offsetHeight-stage.offsetHeight));
+  const logoProgress=reduced.matches?1:ease(p/.20);
+  logo.style.opacity=logoProgress;logo.style.transform=`translateY(${(1-logoProgress)*20}px)`;
+  textChars.forEach((char,i)=>{const progress=reduced.matches?1:ease((p-.22-i/Math.max(1,textChars.length-1)*.16)/.10);char.style.opacity=progress;char.style.transform=`translateY(${(1-progress)*12}px)`;});
+  imageReveal=reduced.matches?1:ease((p-.50)/.22);thumbs.style.opacity=imageReveal;
+  phase=(reduced.matches?0:clamp((p-.50)/.50)*Math.PI*2)+dragPhase;animate();
+ }
+
  let start=null,moved=false,suppressClick=false;
  stack.addEventListener('pointerdown',e=>{if(e.button!==0)return;start={x:e.clientX,y:e.clientY,phase:dragPhase};moved=false;});
  addEventListener('pointermove',e=>{if(!start)return;const dx=e.clientX-start.x;if(Math.abs(dx)>8)moved=true;if(!moved)return;dragPhase=start.phase+dx/stack.clientWidth*Math.PI*2;scroll();});

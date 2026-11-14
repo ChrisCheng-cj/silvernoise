@@ -27,9 +27,8 @@
 .aigc-stage[data-mode=Gallery] .aigc-stack{left:5vw;right:5vw;overflow:hidden;mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent);-webkit-mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent)}
 @media(max-width:700px){.aigc-modes{top:24px}.aigc-stack{top:95px}.aigc-intro{gap:0}.aigc-intro img{width:80px;height:80px}.aigc-intro p{font-size:13px}.aigc-stage[data-mode=Tilt] .aigc-intro,.aigc-stage[data-mode=Gallery] .aigc-intro{top:115px}}
 
-/* Intro appears first; the image layout follows after the intro is readable. */
-.aigc-intro{opacity:0;translate:0 16px;transition:opacity .85s ease,translate .85s ease}
-.aigc-stack,.aigc-thumbs{opacity:0;transition:opacity .9s ease .95s}
-.aigc-stage.aigc-entered .aigc-intro{opacity:1;translate:0 0}
-.aigc-stage.aigc-entered .aigc-stack,.aigc-stage.aigc-entered .aigc-thumbs{opacity:1}
-@media(prefers-reduced-motion:reduce){.aigc-intro,.aigc-stack,.aigc-thumbs{opacity:1;translate:none;transition:none}}
+/* The reveal sequence follows scroll position in both directions. */
+#aigc-lab{height:240svh}
+.aigc-intro img,.aigc-reveal-char,.aigc-card,.aigc-thumbs{opacity:0}
+.aigc-reveal-char{display:inline-block;will-change:opacity,transform}
+@media(prefers-reduced-motion:reduce){#aigc-lab{height:100svh}.aigc-intro img,.aigc-reveal-char,.aigc-thumbs{opacity:1;transform:none;will-change:auto}}
