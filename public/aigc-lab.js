@@ -1,18 +1,19 @@
 const lab=document.querySelector('#aigc-lab');
 if(lab){
- const stage=lab.querySelector('.aigc-stage'),stack=lab.querySelector('.aigc-stack'),caption=lab.querySelector('.aigc-caption');
+ const stage=lab.querySelector('.aigc-stage'),stack=lab.querySelector('.aigc-stack');
  const originals=[...stack.querySelectorAll('.aigc-card')],reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const modes=document.createElement('div');modes.className='aigc-modes';modes.setAttribute('role','group');modes.setAttribute('aria-label','图片展示模式');
  let mode='Flat',selected=0,phase=0,dragPhase=0,frame=0;
- const hint=document.createElement('p');hint.className='aigc-hint';hint.textContent='SCROLL / DRAG TO EXPLORE';stage.append(modes,hint);
+ stage.append(modes);
  const thumbs=document.createElement('div');thumbs.className='aigc-thumbs';thumbs.setAttribute('aria-label','选择图片');stage.append(thumbs);
  const cards=[...originals];
  const intro=document.createElement('div');intro.className='aigc-intro';intro.innerHTML='<img src="/assets/aigc/lab-logo.png" alt="AIGC LAB"><p>这里是我的AI实验室<br>这些都是我用AI创建的作品</p>';stage.append(intro);
+ const entrance=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){stage.classList.add('aigc-entered');entrance.disconnect();}},{threshold:.45});entrance.observe(stage);
  stack.setAttribute('aria-label','AIGC图片展示，支持拖动和方向键');
  const states=cards.map(()=>({x:0,y:0,s:.05,ry:0,o:0}));
  for(const name of ['Flat','Tilt','Ring','Gallery']){const button=document.createElement('button');button.type='button';button.textContent=name;button.addEventListener('click',()=>setMode(name));modes.append(button);}
  originals.forEach((card,i)=>{const button=document.createElement('button');button.type='button';button.setAttribute('aria-label',card.dataset.title);const img=card.querySelector('img').cloneNode();img.alt='';button.append(img);button.addEventListener('click',()=>{selected=i;sync();animate();});thumbs.append(button);});
- function sync(){stage.dataset.mode=mode;intro.hidden=mode==='Ring';[...modes.children].forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===mode)));thumbs.hidden=mode!=='Gallery';[...thumbs.children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===selected)));caption.textContent=`${String(selected+1).padStart(2,'0')} — ${String(originals.length).padStart(2,'0')}`;}
+ function sync(){stage.dataset.mode=mode;intro.hidden=mode==='Ring';[...modes.children].forEach(b=>b.setAttribute('aria-pressed',String(b.textContent===mode)));thumbs.hidden=mode!=='Gallery';[...thumbs.children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===selected)));}
  function setMode(value){mode=value;sync();animate();}
  function dimensions(w,h){
   const density=Math.min(1.2,Math.sqrt(6/cards.length));
