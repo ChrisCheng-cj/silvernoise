@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const root = path.resolve(import.meta.dirname, '..');
+const output = path.join(root, 'dist');
+if (path.dirname(output) !== root || path.basename(output) !== 'dist') throw Error('Invalid output directory');
+await fs.rm(output, { recursive: true, force: true });
+await fs.mkdir(path.join(output, 'server'), { recursive: true });
+await fs.mkdir(path.join(output, '.openai'), { recursive: true });
+await fs.cp(path.join(root, 'public'), path.join(output, 'client'), { recursive: true });
+const defaults = await fs.readFile(path.join(root, 'public/project-defaults.json'), 'utf8');
+const source = (await fs.readFile(path.join(root, 'worker/index.js'), 'utf8')).replace("import defaults from '../public/project-defaults.json' with { type: 'json' };", `const defaults = ${defaults};`);
+await fs.writeFile(path.join(output, 'server/index.js'), source);
+await fs.copyFile(path.join(root, '.openai/hosting.json'), path.join(output, '.openai/hosting.json'));
+await fs.cp(path.join(root, 'drizzle'), path.join(output, '.openai/drizzle'), { recursive: true });
+const config = { name:'silver-noise-portfolio', main:'index.js', compatibility_date:'2026-05-15', assets:{directory:'../client',binding:'ASSETS',run_worker_first:true}, d1_databases:[{binding:'DB',database_name:'portfolio-content',database_id:'00000000-0000-4000-8000-000000000000',migrations_dir:'../../drizzle'}], r2_buckets:[{binding:'BUCKET',bucket_name:'portfolio-media'}] };
+await fs.writeFile(path.join(output, 'server/wrangler.json'), JSON.stringify(config, null, 2));
+console.log('Built Worker, website assets, and database migrations.');

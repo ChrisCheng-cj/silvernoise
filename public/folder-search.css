@@ -1,0 +1,17 @@
+.site-header nav{position:relative}
+#site-search{position:absolute;top:50%;right:50px;transform:translateY(-50%);width:min(240px,24vw);max-height:none;overflow:visible;margin:0;padding:0;background:white;color:#111;border:0;border-bottom:1px solid #aaa;border-radius:0;box-shadow:none;pointer-events:auto;animation:search-expand .2s ease}
+#site-search #search-input{border:0;border-radius:0;background:transparent;padding:10px 4px;color:#111;font-size:16px;box-shadow:none}
+#search-input::placeholder{color:#777}
+@keyframes search-expand{from{opacity:0;clip-path:inset(0 0 0 100%)}to{opacity:1;clip-path:inset(0)}}
+#selected-works .showcase-folder{pointer-events:none;z-index:10;background:transparent}
+.showcase-folder::before,.showcase-folder>span{display:none}
+.folder-tabs{pointer-events:auto;position:relative;height:110px}
+.folder-tab{position:absolute;left:0;top:0;width:100%;height:66px;text-align:left;padding:0 18px 20px;background:#fafafa;border:0;border-radius:16px 16px 0 0;font:400 16px Arial,"Microsoft YaHei",sans-serif;color:#111;transition:top .25s,color .25s;z-index:1}
+.folder-tab[aria-selected="true"]{top:40px;height:70px;color:#fff;background:transparent;padding-bottom:0;z-index:2;isolation:isolate}
+.folder-tab[aria-selected="true"]::before{content:'';position:absolute;inset:0;z-index:-1;background:#151515;border-radius:14px 14px 0 0;clip-path:polygon(0 0,70% 0,79% 25%,100% 25%,100% 100%,0 100%);clip-path:shape(from 14px 0,line to 69% 0,curve to 72% 5px with 70% 0 / 71% 2px,line to 79% 21px,curve to 82% 24px with 80% 24px / 81% 24px,line to calc(100% - 12px) 24px,curve to 100% 36px with 100% 24px / 100% 24px,line to 100% 100%,line to 0 100%,line to 0 14px,curve to 14px 0 with 0 0 / 0 0,close)}
+.folder-tab:focus-visible{outline:2px solid #888;outline-offset:3px}
+#folder-gallery{pointer-events:none}.folder-empty{margin:55px 20px;text-align:center;color:#888;font-size:14px}
+.showcase-card[hidden]{display:none!important}
+@media(max-width:700px){#site-search{position:fixed;top:64px;right:5vw;transform:none;width:90vw;background:#fff}.folder-tab{font-size:14px;padding-left:14px}}
+@media(prefers-reduced-motion:reduce){#site-search{animation:none}.folder-tab{transition:none}}
+
