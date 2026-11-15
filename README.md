@@ -14,6 +14,10 @@ npm run build
 
 输出为 `dist/client`（前端）和 `dist/server`（Worker 后端）。
 
+## Cloudflare 独立部署
+
+独立部署入口、GitHub 自动构建配置和迁移步骤见 [CLOUDFLARE.md](CLOUDFLARE.md)。当前仅完成代码适配；尚未完成账号授权、云端资源创建和数据迁移，不代表新站已经上线。
+
 ## 托管说明
 
 当前完整网站运行在 Sites，依赖 Cloudflare Worker、D1 数据库、R2 存储及 Sites 提供的可信登录身份。上传代码到 GitHub 不会自动迁移这些服务。
